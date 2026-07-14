@@ -1,0 +1,21 @@
+{
+  "name": "klms-plus-app",
+  "version": "1.3.0",
+  "description": "KLMS Plus three-tier Render deployment with PostgreSQL persistence",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "db:init": "node scripts/init-db.js"
+  },
+  "keywords": [
+    "klms",
+    "canvas",
+    "student",
+    "webapp"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "pg": "^8.16.3"
+  }
+}

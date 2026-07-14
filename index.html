@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KLMS Plus - 学生生活支援アプリ</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div>
+      <p class="eyebrow">KLMS / CanvasLMS 補助アプリ MVP</p>
+      <h1>KLMS Plus</h1>
+      <p class="lead">課題・時間割・空き教室・レポート支援をまとめて管理する学生向けWebアプリ</p>
+    </div>
+    <div class="header-card">
+      <span>今日</span>
+      <strong id="todayText">--</strong>
+      <small id="nextDeadlineText">次の締切を確認中...</small>
+    </div>
+  </header>
+
+  <main class="layout">
+    <nav class="sidebar" aria-label="機能メニュー">
+      <button class="nav-button active" data-target="dashboard">ダッシュボード</button>
+      <button class="nav-button" data-target="assignments">課題管理</button>
+      <button class="nav-button" data-target="file-tools">ファイル名・プレビュー</button>
+      <button class="nav-button" data-target="timetable">時間割</button>
+      <button class="nav-button" data-target="classrooms">空き教室</button>
+      <button class="nav-button" data-target="ai-support">AIレポート支援</button>
+      <button class="nav-button" data-target="settings">設定</button>
+    </nav>
+
+    <section class="content">
+      <section id="dashboard" class="page active-page">
+        <div class="page-title">
+          <div>
+            <h2>ダッシュボード</h2>
+            <p>締切が近い課題と今日の予定をまとめて確認できます。</p>
+          </div>
+          <button class="secondary" id="resetDemoBtn">デモデータに戻す</button>
+        </div>
+
+        <div class="summary-grid">
+          <article class="summary-card">
+            <span>未完了課題</span>
+            <strong id="openCount">0</strong>
+          </article>
+          <article class="summary-card warning">
+            <span>3日以内の締切</span>
+            <strong id="urgentCount">0</strong>
+          </article>
+          <article class="summary-card">
+            <span>登録講義</span>
+            <strong id="courseCount">0</strong>
+          </article>
+          <article class="summary-card">
+            <span>教室データ</span>
+            <strong id="roomCount">0</strong>
+          </article>
+        </div>
+
+        <div class="two-column">
+          <article class="panel">
+            <h3>締切が近い課題</h3>
+            <div id="upcomingList" class="list"></div>
+          </article>
+          <article class="panel">
+            <h3>今日の時間割</h3>
+            <div id="todaySchedule" class="list"></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="assignments" class="page">
+        <div class="page-title">
+          <div>
+            <h2>課題管理</h2>
+            <p>KLMSから取得する想定の課題情報を、手入力・保存・完了管理できます。</p>
+          </div>
+        </div>
+
+        <form id="assignmentForm" class="form-grid panel">
+          <label>
+            講義名
+            <input type="text" id="assignmentCourse" placeholder="例：情報ネットワーク論" required />
+          </label>
+          <label>
+            課題名
+            <input type="text" id="assignmentTitle" placeholder="例：第3回レポート" required />
+          </label>
+          <label>
+            締切日時
+            <input type="datetime-local" id="assignmentDeadline" required />
+          </label>
+          <label>
+            メモ
+            <input type="text" id="assignmentMemo" placeholder="提出形式・注意点など" />
+          </label>
+          <button type="submit" class="primary">課題を追加</button>
+        </form>
+
+        <div class="toolbar">
+          <input type="search" id="assignmentSearch" placeholder="課題名・講義名で検索" />
+          <select id="assignmentFilter">
+            <option value="all">すべて</option>
+            <option value="open">未完了</option>
+            <option value="overdue">期限超過済み</option>
+            <option value="before">期限前</option>
+            <option value="within-week">期限前1週間以内</option>
+            <option value="later">期限前（8日以上）</option>
+            <option value="undated">期限未設定</option>
+            <option value="done">完了済み</option>
+          </select>
+        </div>
+
+        <div id="assignmentList" class="card-list"></div>
+      </section>
+
+      <section id="file-tools" class="page">
+        <div class="page-title">
+          <div>
+            <h2>課題ファイル名自動設定・プレビュー</h2>
+            <p>学籍番号・氏名・講義名・課題名から提出用ファイル名を生成します。</p>
+          </div>
+        </div>
+
+        <div class="two-column">
+          <form id="renameForm" class="panel form-stack">
+            <label>
+              学籍番号
+              <input type="text" id="studentId" placeholder="例：12345678" />
+            </label>
+            <label>
+              氏名
+              <input type="text" id="studentName" placeholder="例：菊地寛太" />
+            </label>
+            <label>
+              講義名
+              <input type="text" id="renameCourse" placeholder="例：インターネット経済論" />
+            </label>
+            <label>
+              課題名
+              <input type="text" id="renameAssignment" placeholder="例：第1回レポート" />
+            </label>
+            <label>
+              ファイル
+              <input type="file" id="fileInput" />
+            </label>
+            <button type="submit" class="primary">ファイル名を生成</button>
+            <div class="result-box">
+              <span>生成結果</span>
+              <strong id="generatedName">未生成</strong>
+              <a id="downloadRenamed" class="download-link hidden" href="#">この名前で保存</a>
+            </div>
+          </form>
+
+          <article class="panel preview-panel">
+            <h3>ファイルプレビュー</h3>
+            <div id="previewArea" class="preview-area">PDF・画像・テキストを選択するとプレビューします。</div>
+          </article>
+        </div>
+      </section>
+
+      <section id="timetable" class="page">
+        <div class="page-title">
+          <div>
+            <h2>時間割</h2>
+            <p>履修情報を登録し、曜日・時限ごとに表示します。</p>
+          </div>
+        </div>
+
+        <form id="courseForm" class="form-grid panel">
+          <label>
+            講義名
+            <input type="text" id="courseTitle" required placeholder="例：物性物理II" />
+          </label>
+          <label>
+            曜日
+            <select id="courseDay">
+              <option>月</option><option>火</option><option>水</option><option>木</option><option>金</option><option>土</option>
+            </select>
+          </label>
+          <label>
+            時限
+            <select id="coursePeriod">
+              <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option>
+            </select>
+          </label>
+          <label>
+            教室
+            <input type="text" id="courseRoom" placeholder="例：矢上12-210" />
+          </label>
+          <label>
+            シラバスURL
+            <input type="url" id="courseSyllabus" placeholder="https://..." />
+          </label>
+          <button type="submit" class="primary">講義を追加</button>
+        </form>
+
+        <div id="timetableGrid" class="timetable"></div>
+        <article class="panel imported-courses-panel">
+          <h3>登録・同期済み講義一覧</h3>
+          <div id="courseList" class="card-list"></div>
+        </article>
+      </section>
+
+      <section id="classrooms" class="page">
+        <div class="page-title">
+          <div>
+            <h2>空き教室・教室情報</h2>
+            <p>公式データ＋ユーザー投稿を想定した教室検索です。</p>
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <input type="search" id="roomSearch" placeholder="建物・教室番号で検索" />
+          <select id="campusFilter">
+            <option value="all">全キャンパス</option>
+            <option value="日吉">日吉</option>
+            <option value="矢上">矢上</option>
+            <option value="三田">三田</option>
+          </select>
+          <label class="checkline"><input type="checkbox" id="pcOnly" /> PCあり</label>
+          <label class="checkline"><input type="checkbox" id="eatOnly" /> 飲食可</label>
+        </div>
+
+        <div id="classroomList" class="card-list"></div>
+      </section>
+
+      <section id="ai-support" class="page">
+        <div class="page-title">
+          <div>
+            <h2>AIレポート支援</h2>
+            <p>実APIではなく、デモ用のテンプレート生成機能です。</p>
+          </div>
+        </div>
+
+        <form id="aiForm" class="panel form-stack">
+          <label>
+            レポートテーマ
+            <input type="text" id="reportTheme" placeholder="例：インターネットの経済・生活への利用" required />
+          </label>
+          <label>
+            希望する業界・分野
+            <input type="text" id="reportField" placeholder="例：IT業界、教育業界、セキュリティ業界" />
+          </label>
+          <label>
+            文字数目安
+            <select id="reportLength">
+              <option value="200">200字程度</option>
+              <option value="400" selected>400字程度</option>
+              <option value="800">800字程度</option>
+            </select>
+          </label>
+          <button type="submit" class="primary">テンプレート生成</button>
+        </form>
+
+        <article class="panel output-panel">
+          <div class="panel-header">
+            <h3>生成結果</h3>
+            <button id="copyAiOutput" class="secondary">コピー</button>
+          </div>
+          <pre id="aiOutput">ここに生成結果が表示されます。</pre>
+        </article>
+      </section>
+
+      <section id="settings" class="page">
+        <div class="page-title">
+          <div>
+            <h2>設定</h2>
+            <p>ユーザー情報を保存し、ファイル名生成などに利用します。</p>
+          </div>
+        </div>
+
+        <article class="panel form-stack">
+          <h3>データベース接続</h3>
+          <p class="meta">課題・時間割・教室情報をRender PostgreSQLへ保存します。ブラウザのlocalStorageは障害時のキャッシュとして残ります。</p>
+          <div class="card-actions">
+            <button type="button" class="secondary" id="checkDatabaseStatus">PostgreSQL接続を確認</button>
+            <button type="button" class="secondary" id="saveDatabaseNow">今すぐDBへ保存</button>
+            <button type="button" class="secondary" id="reloadDatabaseState">DBから再読み込み</button>
+          </div>
+          <pre id="databaseStatusOutput" class="mini-output">接続状態を確認しています。</pre>
+        </article>
+
+        <article class="panel form-stack">
+          <h3>KLMS / Canvas API 同期</h3>
+          <p class="meta">
+            Canvas Access Tokenを入力して、履修講義・曜日時限・教室・課題・提出状況を同期します。
+            <br />Keio IDのパスワードは入力しないでください。入力したトークンはこのアプリには保存されず、同期リクエスト中だけ使用されます。
+            <br />この機能は<code>index.html</code>の直接起動では使えません。必ず<code>npm start</code>で起動してください。
+          </p>
+          <div class="sync-credentials">
+            <label>
+              KLMS URL
+              <input type="url" id="klmsBaseUrl" value="https://lms.keio.jp" autocomplete="url" />
+            </label>
+            <label>
+              Canvas Access Token
+              <input type="password" id="klmsAccessToken" placeholder="アクセストークンを貼り付け" autocomplete="off" spellcheck="false" />
+            </label>
+          </div>
+          <label class="inline-check">
+            <input type="checkbox" id="removeDemoOnSync" checked />
+            同期時にデモデータを削除し、実データを優先表示する
+          </label>
+          <div class="card-actions">
+            <button type="button" class="secondary" id="checkKlmsStatus">トークンを確認</button>
+            <button type="button" class="primary" id="syncKlmsBtn">時間割・課題を同期</button>
+            <button type="button" class="secondary" id="exportRawKlmsBtn">KLMS生データを書き出し</button>
+          </div>
+          <p class="meta">
+            時間割はCanvasのTimetable、講義カレンダー、講義名・セクション、シラバス本文の順で曜日・時限を補完します。
+            KLMS側に曜日・時限が登録されていない講義は「未設定」として講義一覧に残します。
+          </p>
+          <pre id="klmsSyncOutput" class="mini-output">アクセストークンを入力して「トークンを確認」を押してください。</pre>
+        </article>
+
+        <article class="panel form-stack">
+          <h3>JSON貼り付けインポート</h3>
+          <p class="meta">
+            APIトークンが発行できない場合は、KLMSにログインしたブラウザで <code>https://lms.keio.jp/api/v1/planner/items</code> を開き、表示されたJSONをここに貼り付けて取り込めます。
+          </p>
+          <textarea id="plannerJsonInput" rows="8" placeholder='[{"plannable_type":"assignment", ...}]'></textarea>
+          <button type="button" class="secondary" id="importPlannerJsonBtn">JSONを取り込む</button>
+        </article>
+
+        <form id="settingsForm" class="panel form-stack">
+          <label>
+            学籍番号
+            <input type="text" id="settingsStudentId" placeholder="例：12345678" />
+          </label>
+          <label>
+            氏名
+            <input type="text" id="settingsName" placeholder="例：菊地寛太" />
+          </label>
+          <label>
+            通知タイミング
+            <select id="notifyDays">
+              <option value="1">締切1日前</option>
+              <option value="3" selected>締切3日前</option>
+              <option value="7">締切7日前</option>
+            </select>
+          </label>
+          <button type="submit" class="primary">設定を保存</button>
+        </form>
+      </section>
+    </section>
+  </main>
+
+  <div id="toast" class="toast hidden"></div>
+  <script src="app.js"></script>
+</body>
+</html>
