@@ -9,7 +9,7 @@
 <body>
   <header class="app-header">
     <div>
-      <p class="eyebrow">KLMS / CanvasLMS 補助アプリ MVP</p>
+      <p class="eyebrow">KLMS / CanvasLMS 補助アプリ v1.4.0</p>
       <h1>KLMS Plus</h1>
       <p class="lead">課題・時間割・空き教室・レポート支援をまとめて管理する学生向けWebアプリ</p>
     </div>
@@ -47,7 +47,7 @@
             <strong id="openCount">0</strong>
           </article>
           <article class="summary-card warning">
-            <span>3日以内の締切</span>
+            <span>期限前1週間以内</span>
             <strong id="urgentCount">0</strong>
           </article>
           <article class="summary-card">
@@ -102,11 +102,14 @@
 
         <div class="toolbar">
           <input type="search" id="assignmentSearch" placeholder="課題名・講義名で検索" />
-          <select id="assignmentFilter">
+          <select id="assignmentFilter" aria-label="課題の期限状態で絞り込み">
             <option value="all">すべて</option>
-            <option value="open">未完了</option>
+            <option value="open">未完了すべて</option>
+            <option value="overdue">期限超過済み</option>
+            <option value="within-week">期限前1週間以内</option>
+            <option value="later">期限前（8日以上）</option>
+            <option value="undated">期限未設定</option>
             <option value="done">完了済み</option>
-            <option value="urgent">3日以内</option>
           </select>
         </div>
 
@@ -204,24 +207,69 @@
       <section id="classrooms" class="page">
         <div class="page-title">
           <div>
-            <h2>空き教室・教室情報</h2>
-            <p>公式データ＋ユーザー投稿を想定した教室検索です。</p>
+            <h2>空き教室・公式シラバス連携</h2>
+            <p>公式シラバスの曜日・時限・キャンパス・教室情報と、登録済み時間割を使って空き候補を判定します。</p>
           </div>
+          <a class="secondary button-link" href="https://gslbs.keio.jp/pub-syllabus/search" target="_blank" rel="noopener">慶應公式シラバス検索を開く</a>
         </div>
 
-        <div class="toolbar">
-          <input type="search" id="roomSearch" placeholder="建物・教室番号で検索" />
-          <select id="campusFilter">
-            <option value="all">全キャンパス</option>
-            <option value="日吉">日吉</option>
-            <option value="矢上">矢上</option>
-            <option value="三田">三田</option>
-          </select>
-          <label class="checkline"><input type="checkbox" id="pcOnly" /> PCあり</label>
-          <label class="checkline"><input type="checkbox" id="eatOnly" /> 飲食可</label>
+        <article class="panel availability-panel">
+          <h3>空き候補を検索</h3>
+          <div class="toolbar room-toolbar">
+            <input type="search" id="roomSearch" placeholder="建物・教室番号で検索" />
+            <select id="campusFilter">
+              <option value="all">全キャンパス</option>
+              <option value="日吉">日吉</option>
+              <option value="矢上">矢上</option>
+              <option value="三田">三田</option>
+              <option value="湘南藤沢">湘南藤沢</option>
+              <option value="信濃町">信濃町</option>
+              <option value="芝共立">芝共立</option>
+            </select>
+            <select id="roomDayFilter" aria-label="曜日">
+              <option value="月">月曜</option><option value="火">火曜</option><option value="水">水曜</option>
+              <option value="木">木曜</option><option value="金">金曜</option><option value="土">土曜</option><option value="日">日曜</option>
+            </select>
+            <select id="roomPeriodFilter" aria-label="時限">
+              <option value="">全時限</option>
+              <option value="1">1限</option><option value="2">2限</option><option value="3">3限</option>
+              <option value="4">4限</option><option value="5">5限</option><option value="6">6限</option><option value="7">7限</option>
+            </select>
+            <select id="roomAvailabilityFilter" aria-label="空き状況">
+              <option value="available">空き候補のみ</option>
+              <option value="busy">使用予定ありのみ</option>
+              <option value="all">すべて</option>
+            </select>
+            <label class="checkline"><input type="checkbox" id="pcOnly" /> PCあり</label>
+            <label class="checkline"><input type="checkbox" id="eatOnly" /> 飲食可</label>
+            <button type="button" class="secondary" id="setCurrentPeriodBtn">現在時刻から設定</button>
+          </div>
+          <p id="classroomStatusSummary" class="notice-text">曜日・時限とシラバス情報から空き候補を判定します。</p>
+        </article>
+
+        <div id="classroomList" class="card-list classroom-results"></div>
+
+        <div class="two-column syllabus-import-grid">
+          <article class="panel form-stack">
+            <h3>公式シラバス詳細URLを取り込む</h3>
+            <p class="meta">
+              公式検索画面で授業を検索し、各授業の詳細ページURLを1行ずつ貼り付けてください。
+              検索画面そのものではなく、<code>/pub-syllabus/detail</code>を含むURLが必要です。
+            </p>
+            <textarea id="syllabusUrlsInput" rows="7" placeholder="https://gslbs.keio.jp/pub-syllabus/detail?...&#10;https://gslbs.keio.jp/pub-syllabus/detail?..."></textarea>
+            <button type="button" class="primary" id="importSyllabusUrlsBtn">シラバスURLを取り込む</button>
+          </article>
+
+          <article class="panel form-stack">
+            <h3>教室番号付き時間割JSON</h3>
+            <p class="meta">公開シラバスに教室番号がない場合、曜日・時限・教室を含むJSONを補助データとして取り込めます。</p>
+            <textarea id="officialScheduleJsonInput" rows="7" placeholder='[{"title":"講義名","day":"月","period":"2","campus":"日吉","room":"J11"}]'></textarea>
+            <button type="button" class="secondary" id="importOfficialScheduleJsonBtn">時間割JSONを取り込む</button>
+          </article>
         </div>
 
-        <div id="classroomList" class="card-list"></div>
+        <pre id="syllabusImportOutput" class="mini-output">公式シラバスは未取り込みです。</pre>
+        <p class="meta room-disclaimer">「空き候補」は確定情報ではありません。公開シラバスに教室番号がない授業、教室変更、休講・補講が反映されない場合があります。最新情報はK-Support等でも確認してください。</p>
       </section>
 
       <section id="ai-support" class="page">
@@ -349,6 +397,6 @@
   </main>
 
   <div id="toast" class="toast hidden"></div>
-  <script src="app.js?v=1.3.1"></script>
+  <script src="app.js?v=1.4.0"></script>
 </body>
 </html>

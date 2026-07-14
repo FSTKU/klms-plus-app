@@ -1,3 +1,4 @@
+const APP_VERSION = "1.4.0";
 const STORAGE_KEY = "klms-plus-state-v2";
 const CLIENT_ID_KEY = "klms-plus-client-id-v1";
 const clientId = getOrCreateClientId();
@@ -342,7 +343,7 @@ function renderCompactAssignment(item) {
           <h4>${escapeHtml(item.title)}</h4>
           <p class="meta">${escapeHtml(item.course)} / 締切：${formatDateTime(item.deadline)}</p>
         </div>
-        <span class="badge ${status.className}">${status.label}</span>
+        <span class="badge ${status.className}" title="期限状態">${status.label}</span>
       </div>
     </div>
   `;
@@ -378,7 +379,7 @@ function renderAssignments() {
               <h4>${escapeHtml(item.title)}</h4>
               <p class="meta">講義：${escapeHtml(item.course)}<br>締切：${formatDateTime(item.deadline)}<br>情報源：${escapeHtml(item.source || "手入力")}</p>
             </div>
-            <span class="badge ${status.className}">${status.label}</span>
+            <span class="badge ${status.className}" title="期限状態">${status.label}</span>
           </div>
           <div class="card-actions">
             <button class="${item.done ? "secondary" : "success"}" data-action="toggle-assignment" data-id="${item.id}">${item.done ? "未完了に戻す" : "完了"}</button>
@@ -496,7 +497,7 @@ function renderClassrooms() {
               情報源：${escapeHtml(room.updatedBy || "ユーザー登録")}
             </p>
           </div>
-          <span class="badge ${status.className}">${status.label}</span>
+          <span class="badge ${status.className}" title="期限状態">${status.label}</span>
         </div>
         <div class="card-actions">
           <button class="secondary" data-action="edit-room-note" data-id="${room.id}">メモ更新</button>
