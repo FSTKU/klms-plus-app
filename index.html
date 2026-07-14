@@ -105,12 +105,8 @@
           <select id="assignmentFilter">
             <option value="all">すべて</option>
             <option value="open">未完了</option>
-            <option value="overdue">期限超過済み</option>
-            <option value="before">期限前</option>
-            <option value="within-week">期限前1週間以内</option>
-            <option value="later">期限前（8日以上）</option>
-            <option value="undated">期限未設定</option>
             <option value="done">完了済み</option>
+            <option value="urgent">3日以内</option>
           </select>
         </div>
 
@@ -274,17 +270,6 @@
         </div>
 
         <article class="panel form-stack">
-          <h3>データベース接続</h3>
-          <p class="meta">課題・時間割・教室情報をRender PostgreSQLへ保存します。ブラウザのlocalStorageは障害時のキャッシュとして残ります。</p>
-          <div class="card-actions">
-            <button type="button" class="secondary" id="checkDatabaseStatus">PostgreSQL接続を確認</button>
-            <button type="button" class="secondary" id="saveDatabaseNow">今すぐDBへ保存</button>
-            <button type="button" class="secondary" id="reloadDatabaseState">DBから再読み込み</button>
-          </div>
-          <pre id="databaseStatusOutput" class="mini-output">接続状態を確認しています。</pre>
-        </article>
-
-        <article class="panel form-stack">
           <h3>KLMS / Canvas API 同期</h3>
           <p class="meta">
             Canvas Access Tokenを入力して、履修講義・曜日時限・教室・課題・提出状況を同期します。
@@ -326,6 +311,20 @@
           <button type="button" class="secondary" id="importPlannerJsonBtn">JSONを取り込む</button>
         </article>
 
+
+        <article class="panel form-stack">
+          <h3>Render PostgreSQL</h3>
+          <p class="meta">
+            Render PostgreSQLへの接続確認と、課題・時間割・教室情報・設定の保存／再読み込みを行います。
+          </p>
+          <div class="card-actions">
+            <button type="button" class="secondary" id="checkDatabaseStatus">PostgreSQL接続を確認</button>
+            <button type="button" class="primary" id="saveDatabaseNow">今すぐDBへ保存</button>
+            <button type="button" class="secondary" id="reloadDatabaseState">DBから再読み込み</button>
+          </div>
+          <pre id="databaseStatusOutput" class="mini-output">未確認です。「PostgreSQL接続を確認」を押してください。</pre>
+        </article>
+
         <form id="settingsForm" class="panel form-stack">
           <label>
             学籍番号
@@ -350,6 +349,6 @@
   </main>
 
   <div id="toast" class="toast hidden"></div>
-  <script src="app.js"></script>
+  <script src="app.js?v=1.3.1"></script>
 </body>
 </html>

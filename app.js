@@ -1039,18 +1039,22 @@ function bindEvents() {
   });
 
   ["#roomSearch", "#campusFilter", "#roomDayFilter", "#roomPeriodFilter", "#roomAvailabilityFilter", "#pcOnly", "#eatOnly"].forEach((selector) => {
-    document.querySelector(selector).addEventListener("input", renderClassrooms);
-    document.querySelector(selector).addEventListener("change", renderClassrooms);
+    const element = document.querySelector(selector);
+    if (!element) return;
+    element.addEventListener("input", renderClassrooms);
+    element.addEventListener("change", renderClassrooms);
   });
-  document.querySelector("#setCurrentPeriodBtn").addEventListener("click", () => {
-    const campus = document.querySelector("#campusFilter").value;
-    document.querySelector("#roomDayFilter").value = dayNames[new Date().getDay()];
-    document.querySelector("#roomPeriodFilter").value = currentPeriodForCampus(campus === "all" ? "日吉" : campus);
+  document.querySelector("#setCurrentPeriodBtn")?.addEventListener("click", () => {
+    const campus = document.querySelector("#campusFilter")?.value || "all";
+    const dayFilter = document.querySelector("#roomDayFilter");
+    const periodFilter = document.querySelector("#roomPeriodFilter");
+    if (dayFilter) dayFilter.value = dayNames[new Date().getDay()];
+    if (periodFilter) periodFilter.value = currentPeriodForCampus(campus === "all" ? "日吉" : campus);
     renderClassrooms();
     showToast("現在の曜日・時限を設定しました");
   });
-  document.querySelector("#importSyllabusUrlsBtn").addEventListener("click", handleSyllabusUrlImport);
-  document.querySelector("#importOfficialScheduleJsonBtn").addEventListener("click", handleOfficialScheduleJsonImport);
+  document.querySelector("#importSyllabusUrlsBtn")?.addEventListener("click", handleSyllabusUrlImport);
+  document.querySelector("#importOfficialScheduleJsonBtn")?.addEventListener("click", handleOfficialScheduleJsonImport);
 
   document.querySelector("#classroomList").addEventListener("click", (event) => {
     const button = event.target.closest("button[data-action='edit-room-note']");
@@ -1186,7 +1190,10 @@ ${field}では、インターネットを単なる情報収集の手段として
 
 initializeNavigation();
 bindEvents();
-document.querySelector("#roomDayFilter").value = dayNames[new Date().getDay()];
+{
+  const roomDayFilter = document.querySelector("#roomDayFilter");
+  if (roomDayFilter) roomDayFilter.value = dayNames[new Date().getDay()];
+}
 renderAll();
 handleDatabaseStatus();
 hydrateStateFromDatabase();
