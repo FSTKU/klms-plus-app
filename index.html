@@ -3,20 +3,27 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>KLMS Plus - 学生生活支援アプリ</title>
+  <title>KLMS Plus - 学生生活ダッシュボード</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header class="app-header">
-    <div>
-      <p class="eyebrow">KLMS / CanvasLMS 補助アプリ v1.4.0</p>
+    <div class="header-copy">
+      <p class="eyebrow" id="appVersionLabel">KLMS / CanvasLMS 補助アプリ v1.4.1</p>
       <h1>KLMS Plus</h1>
-      <p class="lead">課題・時間割・空き教室・レポート支援をまとめて管理する学生向けWebアプリ</p>
+      <p class="lead">課題、時間割、空き教室、提出準備をひとつの画面で扱う学生生活ダッシュボード</p>
     </div>
-    <div class="header-card">
-      <span>今日</span>
-      <strong id="todayText">--</strong>
-      <small id="nextDeadlineText">次の締切を確認中...</small>
+    <div class="header-side">
+      <div class="header-card">
+        <span>今日</span>
+        <strong id="todayText">--</strong>
+        <small id="nextDeadlineText">次の締切を確認中...</small>
+      </div>
+      <div class="header-pills" aria-label="アプリ構成">
+        <span>フロントエンド</span>
+        <span>Node.js API</span>
+        <span>PostgreSQL</span>
+      </div>
     </div>
   </header>
 
@@ -36,7 +43,7 @@
         <div class="page-title">
           <div>
             <h2>ダッシュボード</h2>
-            <p>締切が近い課題と今日の予定をまとめて確認できます。</p>
+            <p>今日見るべき課題、授業、保存状態をまとめて確認できます。</p>
           </div>
           <button class="secondary" id="resetDemoBtn">デモデータに戻す</button>
         </div>
@@ -50,6 +57,10 @@
             <span>期限前1週間以内</span>
             <strong id="urgentCount">0</strong>
           </article>
+          <article class="summary-card danger-soft">
+            <span>期限超過</span>
+            <strong id="overdueCount">0</strong>
+          </article>
           <article class="summary-card">
             <span>登録講義</span>
             <strong id="courseCount">0</strong>
@@ -58,7 +69,41 @@
             <span>教室データ</span>
             <strong id="roomCount">0</strong>
           </article>
+          <article class="summary-card success-soft">
+            <span>課題完了率</span>
+            <strong id="completionRate">0%</strong>
+          </article>
         </div>
+
+        <article class="panel dashboard-insight">
+          <div>
+            <h3>今の優先度</h3>
+            <p id="priorityText" class="meta">課題の状態を確認中...</p>
+          </div>
+          <div class="progress-block">
+            <div class="progress-head">
+              <span>課題の進捗</span>
+              <strong id="progressText">0 / 0</strong>
+            </div>
+            <div class="progress-track" aria-label="課題完了率">
+              <span id="assignmentProgressFill"></span>
+            </div>
+          </div>
+          <dl class="status-strip">
+            <div>
+              <dt>保存</dt>
+              <dd id="dbStatusText">確認中</dd>
+            </div>
+            <div>
+              <dt>シラバス</dt>
+              <dd id="syllabusCountText">0件</dd>
+            </div>
+            <div>
+              <dt>最終更新</dt>
+              <dd id="lastSavedText">未保存</dd>
+            </div>
+          </dl>
+        </article>
 
         <div class="two-column">
           <article class="panel">
@@ -397,6 +442,6 @@
   </main>
 
   <div id="toast" class="toast hidden"></div>
-  <script src="app.js?v=1.4.0"></script>
+  <script src="app.js?v=1.4.1"></script>
 </body>
 </html>

@@ -1,9 +1,10 @@
-const APP_VERSION = "1.4.0";
+const APP_VERSION = "1.4.1";
 const STORAGE_KEY = "klms-plus-state-v2";
 const CLIENT_ID_KEY = "klms-plus-client-id-v1";
 const clientId = getOrCreateClientId();
 let databaseSaveTimer = null;
 let databaseAvailable = false;
+let lastSavedAt = "";
 
 const dayNames = ["日", "月", "火", "水", "木", "金", "土"];
 const timetableDays = ["月", "火", "水", "木", "金", "土"];
@@ -152,6 +153,7 @@ function loadState() {
 }
 
 function saveState() {
+  lastSavedAt = new Date().toISOString();
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   scheduleDatabaseSave();
 }
@@ -286,6 +288,7 @@ function renderAll() {
 }
 
 function renderHeader() {
+  document.querySelector("#appVersionLabel").textContent = `KLMS / CanvasLMS 補助アプリ v${APP_VERSION}`;
   const today = new Date();
   document.querySelector("#todayText").textContent = new Intl.DateTimeFormat("ja-JP", {
     month: "long",
@@ -305,10 +308,26 @@ function renderHeader() {
 function renderDashboard() {
   const open = state.assignments.filter((item) => !item.done);
   const urgent = open.filter((item) => deadlineStatus(item.deadline).kind === "within-week");
+  const overdue = open.filter((item) => deadlineStatus(item.deadline).kind === "overdue");
+  const doneCount = state.assignments.filter((item) => item.done).length;
+  const totalAssignments = state.assignments.length;
+  const completionRate = totalAssignments ? Math.round((doneCount / totalAssignments) * 100) : 0;
   document.querySelector("#openCount").textContent = open.length;
   document.querySelector("#urgentCount").textContent = urgent.length;
+  document.querySelector("#overdueCount").textContent = overdue.length;
   document.querySelector("#courseCount").textContent = new Set(state.courses.map((course) => course.canvasId || course.title)).size;
   document.querySelector("#roomCount").textContent = state.classrooms.length;
+  document.querySelector("#completionRate").textContent = `${completionRate}%`;
+  document.querySelector("#progressText").textContent = `${doneCount} / ${totalAssignments}`;
+  document.querySelector("#assignmentProgressFill").style.width = `${completionRate}%`;
+  document.querySelector("#dbStatusText").textContent = databaseAvailable ? "PostgreSQL同期中" : "ブラウザ保存";
+  document.querySelector("#syllabusCountText").textContent = `${state.officialSchedule.length}件`;
+  document.querySelector("#lastSavedText").textContent = lastSavedAt ? formatSavedTime(lastSavedAt) : "未保存";
+
+  const nextAction = overdue[0] || urgent[0] || open.sort((a, b) => assignmentSortValue(a) - assignmentSortValue(b))[0];
+  document.querySelector("#priorityText").textContent = nextAction
+    ? `${nextAction.course}「${nextAction.title}」を優先。締切は${formatDateTime(nextAction.deadline)}です。`
+    : "未完了課題はありません。時間割や提出ファイルの準備を確認できます。";
 
   const upcoming = [...open].sort((a, b) => assignmentSortValue(a) - assignmentSortValue(b)).slice(0, 5);
   document.querySelector("#upcomingList").innerHTML = upcoming.length
@@ -332,6 +351,17 @@ function renderDashboard() {
       </div>
     `).join("")
     : `<div class="item-card"><p class="meta">今日の登録講義はありません。</p></div>`;
+}
+
+function formatSavedTime(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "未保存";
+  return new Intl.DateTimeFormat("ja-JP", {
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
 }
 
 function renderCompactAssignment(item) {

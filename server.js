@@ -197,7 +197,7 @@ async function handleSyllabusApi(req, res) {
           headers: {
             Accept: "text/html,application/xhtml+xml",
             "Accept-Language": "ja,en;q=0.8",
-            "User-Agent": "KLMS-Plus-Render/1.4 (personal syllabus importer)",
+            "User-Agent": "KLMS-Plus-Render/1.4.1 (personal syllabus importer)",
           },
         });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -838,7 +838,7 @@ async function canvasFetch(url, token) {
     headers: {
       Authorization: `Bearer ${token}`,
       Accept: "application/json+canvas-string-ids",
-      "User-Agent": "KLMS-Plus-Render/1.4",
+      "User-Agent": "KLMS-Plus-Render/1.4.1",
     },
   });
   if (!response.ok) {
